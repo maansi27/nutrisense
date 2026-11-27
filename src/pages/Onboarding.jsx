@@ -67,9 +67,9 @@ export default function Onboarding({ initial, onDone }) {
         {step === 2 && (
           <div className="ob-body">
             <h2>What's your main goal?</h2><p className="muted">Every score, meal idea and plan is tuned to this.</p>
-            <div className="goal-grid" style={{ marginTop: 22 }}>
-              {GOALS.map((g) => <button key={g.id} className={`goal ${f.goal === g.id ? 'on' : ''}`} onClick={() => set({ goal: g.id })}><span>{g.emoji}</span><b>{g.label}</b></button>)}
-            </div>
+            {['Body goals', 'Health goals'].map((grp) => (
+              <div key={grp}><div className="goal-group">{grp}</div><div className="goal-grid" style={{ marginTop: 22 }}>{GOALS.filter((g) => g.group === grp).map((g) => <button key={g.id} className={`goal ${f.goal === g.id ? 'on' : ''}`} onClick={() => set({ goal: g.id })}><span>{g.emoji}</span><b>{g.label}</b></button>)}</div></div>
+            ))}
           </div>
         )}
 

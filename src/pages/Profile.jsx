@@ -27,9 +27,9 @@ export default function Profile() {
 
         <Card>
           <CardHead icon={<Target size={17} />} title="Your goal" />
-          <div className="goal-grid">
-            {GOALS.map((g) => <button key={g.id} className={`goal ${p.goal === g.id ? 'on' : ''}`} onClick={() => updateProfile({ goal: g.id })}><span>{g.emoji}</span><b>{g.label}</b></button>)}
-          </div>
+          {['Body goals', 'Health goals'].map((grp) => (
+              <div key={grp}><div className="goal-group">{grp}</div><div className="goal-grid">{GOALS.filter((g) => g.group === grp).map((g) => <button key={g.id} className={`goal ${p.goal === g.id ? 'on' : ''}`} onClick={() => updateProfile({ goal: g.id })}><span>{g.emoji}</span><b>{g.label}</b></button>)}</div></div>
+            ))}
         </Card>
 
         <Card>

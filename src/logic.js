@@ -1,16 +1,28 @@
 import { RESTRICTIONS, TAG_LABEL, MEALS, PRODUCTS } from './data'
 
+// ---------- Goal helpers ----------
+export const isDiabetic = (p) => p.goal === 'diabetes' || !!p.diabetes
+export const sugarStrict = (p) => isDiabetic(p) || p.goal === 'pcos'
+export const sodiumStrict = (p) => !!p.bp || p.goal === 'bp' || p.goal === 'heart'
+export const fatStrict = (p) => p.goal === 'heart' || p.goal === 'cholesterol'
+const AFFINITY = {
+  heart: ['heart', 'general', 'loss'], cholesterol: ['cholesterol', 'general', 'loss', 'diabetes'], bp: ['bp', 'general', 'loss'],
+  pcos: ['pcos', 'diabetes', 'loss'], thyroid: ['thyroid', 'general', 'maintain'], gut: ['gut', 'general', 'maintain'], energy: ['energy', 'maintain', 'gain', 'general'],
+}
+const affinity = (p) => AFFINITY[p.goal] || [p.goal]
+
 // ---------- Targets from the simple user-entered profile ----------
 export function targets(p) {
   const bmr = 10 * p.weight + 6.25 * p.height - 5 * p.age + (p.sex === 'female' ? -161 : 5)
   const tdee = bmr * p.activity
-  const adj = { loss: -450, gain: 400, maintain: 0, muscle: 250, diabetes: -150, general: 0 }[p.goal]
+  const adj = { loss: -450, gain: 400, maintain: 0, muscle: 250, diabetes: -150, pcos: -200, general: 0 }[p.goal] ?? 0
   const split = {
     loss: [0.3, 0.4, 0.3], gain: [0.2, 0.5, 0.3], muscle: [0.3, 0.45, 0.25],
     diabetes: [0.22, 0.4, 0.38], maintain: [0.2, 0.5, 0.3], general: [0.2, 0.5, 0.3],
-  }[p.goal]
+    pcos: [0.25, 0.38, 0.37], cholesterol: [0.2, 0.55, 0.25], heart: [0.2, 0.52, 0.28],
+  }[p.goal] || [0.2, 0.5, 0.3]
   const kcal = Math.round((tdee + adj) / 10) * 10
-  const diabetic = p.goal === 'diabetes' || p.diabetes
+  const diabetic = sugarStrict(p)
   return {
     kcal,
     protein: Math.round((kcal * split[0]) / 4),
@@ -18,7 +30,8 @@ export function targets(p) {
     fat: Math.round((kcal * split[2]) / 9),
     fiber: 30,
     sugar: diabetic ? 25 : 50,
-    sodium: p.bp ? 1500 : 2000,
+    satfat: fatStrict(p) ? 13 : 22,
+    sodium: sodiumStrict(p) ? 1500 : 2000,
     water: 3.1,
     bmi: +(p.weight / (p.height / 100) ** 2).toFixed(1),
     goalWeight: p.goalWeight,
@@ -53,7 +66,9 @@ export const FLAG_LABEL = { sugar: 'Added sugar', refined: 'Refined flour', fat:
 export function assess(food, p) {
   const d = food.per100
   const forb = forbiddenMap(p)
-  const diabetic = p.goal === 'diabetes' || p.diabetes
+  const diabetic = sugarStrict(p)
+  const sodStrict = sodiumStrict(p)
+  const fatS = fatStrict(p)
   let s = 70
   const reasons = []
   const add = (type, text, delta = 0) => { s += delta; reasons.push({ type, text }) }
@@ -72,12 +87,13 @@ export function assess(food, p) {
   else add('good', `Low sugar (${d.sugar} g/100 g).`, 5)
 
   // sodium
-  if (d.sodium > 800) add('bad', `Very high sodium (${d.sodium} mg/100 g)${p.bp ? ' — matters with your blood-pressure restriction' : ''}.`, -((d.sodium - 800) / 60) * (p.bp ? 1.6 : 1))
-  else if (d.sodium > 400) add('warn', `Moderate sodium (${d.sodium} mg/100 g).`, p.bp ? -8 : -3)
+  if (d.sodium > 800) add('bad', `Very high sodium (${d.sodium} mg/100 g)${sodStrict ? ' — matters for your blood-pressure goal' : ''}.`, -((d.sodium - 800) / 60) * (sodStrict ? 1.6 : 1))
+  else if (d.sodium > 400) add('warn', `Moderate sodium (${d.sodium} mg/100 g).`, sodStrict ? -8 : -3)
 
   // saturated fat
-  if (d.satfat > 7) add('bad', `High saturated fat (${d.satfat} g/100 g).`, -12)
-  else if (d.satfat > 4) add('warn', `Moderate saturated fat (${d.satfat} g/100 g).`, -5)
+  if (d.satfat > (fatS ? 4 : 7)) add('bad', `High saturated fat (${d.satfat} g/100 g)${fatS ? ' — works against your heart/cholesterol goal' : ''}.`, fatS ? -18 : -12)
+  else if (d.satfat > (fatS ? 2 : 4)) add('warn', `Moderate saturated fat (${d.satfat} g/100 g).`, fatS ? -9 : -5)
+  else if (fatS) add('good', 'Low in saturated fat.', 6)
 
   // fibre
   if (d.fiber >= 6) add('good', `Rich in fibre (${d.fiber} g/100 g) — keeps you fuller, slows sugar release.`, diabetic ? 12 : 8)
@@ -97,6 +113,25 @@ export function assess(food, p) {
     case 'muscle':
       if (d.protein >= 15) add('good', `High protein (${d.protein} g/100 g) supports muscle gain.`, 12)
       else if (d.protein < 5) add('warn', `Low protein (${d.protein} g/100 g) for a muscle-gain goal.`, -7)
+      break
+    case 'heart':
+    case 'cholesterol':
+      if (d.fiber >= 6) add('good', 'Soluble-fibre foods are commonly recommended for heart health.', 4)
+      if (food.ingredients.some((t) => /oats|flax|almond|chickpea|dal|lentil/i.test(t))) add('good', 'Contains heart-friendly ingredients (oats, pulses, nuts or seeds).', 6)
+      break
+    case 'bp':
+      if (d.sodium < 120) add('good', `Very low sodium (${d.sodium} mg/100 g).`, 8)
+      break
+    case 'pcos':
+      if (d.carbs > 60) add('warn', `High carbohydrate (${d.carbs} g/100 g) — low-GI choices are usually preferred.`, -7)
+      if (d.protein >= 10) add('good', `Good protein (${d.protein} g/100 g) helps steady blood sugar.`, 5)
+      break
+    case 'gut':
+      if (d.fiber >= 6) add('good', 'Fibre supports digestion.', 4)
+      if (food.ingredients.some((t) => /yogh?urt|curd|culture|probiotic/i.test(t))) add('good', 'Contains live cultures (probiotic-style).', 8)
+      break
+    case 'energy':
+      if (d.carbs >= 40 && d.fiber >= 5) add('good', 'Complex carbs with fibre give steadier energy.', 6)
       break
     case 'diabetes':
       if (d.carbs > 60) add('warn', `High carbohydrate (${d.carbs} g/100 g) — likely to raise post-meal glucose.`, -8)
@@ -151,13 +186,17 @@ export function perServing(food, p) {
 // ---------- Meals ----------
 export function mealAllowed(m, p) {
   const forb = forbiddenMap(p)
-  return !m.contains.some((c) => forb[c])
+  const tags = [...m.contains]
+  if (m.ing.some((i) => /onion|garlic/.test(i))) tags.push('allium')
+  return !tags.some((c) => forb[c])
 }
 
 export function mealFit(m, p) {
   const t = targets(p)
-  let s = m.goals.includes(p.goal) ? 40 : 10
-  if (p.goal === 'diabetes' || p.diabetes) s += m.gi === 'low' ? 25 : m.gi === 'med' ? 5 : -20
+  let s = m.goals.some((g) => affinity(p).includes(g)) ? 40 : 10
+  if (fatStrict(p)) s += 25 - m.f + m.fiber * 1.5
+  if (sodiumStrict(p) && m.contains.includes('root')) s -= 0
+  if (sugarStrict(p)) s += m.gi === 'low' ? 25 : m.gi === 'med' ? 5 : -20
   if (p.goal === 'loss') s += 20 - Math.abs(m.kcal - t.kcal / 4) / 12 + m.fiber
   if (p.goal === 'gain') s += m.kcal / 25
   if (p.goal === 'muscle') s += m.p
@@ -193,6 +232,11 @@ export function dayTotals(ids) {
 }
 
 export function whyMeal(m, p) {
+  if (fatStrict(p) && m.f <= 10) return `Light on fat (${m.f} g) with ${m.fiber} g fibre — easy on the heart`
+  if (p.goal === 'pcos' && m.gi === 'low') return 'Low glycaemic — helps steady insulin response'
+  if (p.goal === 'gut' && m.fiber >= 8) return `${m.fiber} g fibre supports digestion`
+  if (p.goal === 'bp') return 'Cooked fresh, easy to keep low in salt'
+  if (p.goal === 'energy' && m.gi !== 'high') return 'Steady-release energy'
   if (p.goal === 'diabetes' && m.gi === 'low') return 'Low glycaemic — gentler on blood sugar'
   if (p.goal === 'muscle' && m.p >= 20) return `${m.p} g protein for muscle gain`
   if (p.goal === 'loss' && m.fiber >= 7) return `${m.fiber} g fibre keeps you full`
@@ -204,6 +248,13 @@ export function ingredientMatch(m, pantry) {
   const have = m.ing.filter((i) => pantry.includes(i))
   const missing = m.ing.filter((i) => !pantry.includes(i))
   return { have, missing, pct: m.ing.length ? have.length / m.ing.length : 0 }
+}
+
+// everything eaten on a day: ticked plan meals + manually logged meals
+export function eatenTotals(plan, done, logged, day) {
+  const planned = plan[day].filter((_, i) => done[`${day}-${i}`])
+  const base = dayTotals(planned)
+  return (logged[day] || []).reduce((a, m) => ({ kcal: a.kcal + m.kcal, p: a.p + m.p, c: a.c + m.c, f: a.f + m.f, fiber: a.fiber + (m.fiber || 0) }), base)
 }
 
 export const greeting = () => {

@@ -360,3 +360,17 @@ h1, h2 { font-family: var(--display); letter-spacing: -0.02em; }
 .ob-preview { margin-top: 22px; background: var(--yellow-soft); border-radius: 18px; padding: 14px 18px; font-size: 14px; }
 .btn:disabled { cursor: not-allowed; }
 @media (max-width: 760px) { .ob-card { padding: 24px 20px; } .ob-body h1 { font-size: 38px; } .ob-three { grid-template-columns: 1fr; } }
+
+/* ---------- cheat days & grouped goals ---------- */
+.cheat-banner { display: flex; gap: 12px; align-items: center; background: linear-gradient(135deg, #fff0d6, #ffe0ec); border-radius: 20px; padding: 12px 16px; margin-bottom: 14px; font-size: 24px; }
+.cheat-banner div { font-size: 13px; line-height: 1.4; } .cheat-banner b { display: block; font-size: 14.5px; } .cheat-banner span { color: #6b5a4a; }
+.cheat-banner.big { font-size: 34px; padding: 16px 20px; } .cheat-banner.big div { font-size: 13.5px; }
+.btn.cheat-on { background: #ff6fa5; color: #fff; }
+.week .dcard.cheat { background: #ffe9f1; border-color: #ffb3cf; }
+.week .dcard.cheat.on { border-color: #ff6fa5; }
+.bars .b.cheat i { background: #ff9fc4; }
+.slot.dim { opacity: 0.55; }
+.week-table tr.cheat-row td { background: #ffe9f1; }
+.btn.purple { background: var(--purple); color: #fff; }
+.goal-group { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin: 18px 0 10px; }
+.goal-group:first-child { margin-top: 0; }
