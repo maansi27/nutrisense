@@ -1,15 +1,14 @@
 import { Clock, Pencil, ArrowUpRight, Search, FileBarChart2, Plus, Flame, Drumstick, Wheat, Droplet, ScanLine, ChevronRight, Check, UtensilsCrossed } from 'lucide-react'
 import { Card, CardHead, Chip, MacroRing, Bar, useApp } from '../ui'
-import { SLOTS, assess, dayTotals, greeting, whyMeal } from '../logic'
+import { SLOTS, assess, dayTotals, eatenTotals, greeting, whyMeal } from '../logic'
 import { MEALS, PRODUCTS, GOALS } from '../data'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export default function Home() {
-  const { profile, t, plan, done, setDone, water, setWater, glucose, scans, go, setPendingScan, today, setToday, updateProfile } = useApp()
+  const { profile, t, plan, done, setDone, water, setWater, glucose, scans, go, setPendingScan, today, setToday, logged, cheat } = useApp()
   const dayPlan = plan[today]
-  const eatenIds = dayPlan.filter((_, i) => done[`${today}-${i}`])
-  const eaten = dayTotals(eatenIds)
+  const eaten = eatenTotals(plan, done, logged, today)
   const planned = dayTotals(dayPlan)
   const goal = GOALS.find((g) => g.id === profile.goal)
   const lastG = glucose[glucose.length - 1]
@@ -40,12 +39,14 @@ export default function Home() {
               <div key={d} className={`d ${i === today ? 'on' : ''}`} onClick={() => setToday(i)}>{d}<b>{22 + i}</b></div>
             ))}
           </div>
+          {cheat[today] && <div className="cheat-banner">🍕 <div><b>Cheat day</b><span>Enjoy it — targets are relaxed today. Log what you eat to keep track.</span></div></div>}
           <div className="timeline">
             <div className={`t-item ${water >= 0.5 ? 'done' : ''}`}>
               <div className="check">{water >= 0.5 && <Check size={13} />}</div>
               <div><div className="t-time">07:30</div><div className="t-name">Water intake</div></div>
             </div>
             {dayPlan.map((id, i) => {
+              if (cheat[today]) return null
               const m = MEALS.find((x) => x.id === id)
               if (!m) return null
               const k = `${today}-${i}`
@@ -63,6 +64,12 @@ export default function Home() {
                 </div>
               )
             })}
+            {(logged[today] || []).map((m, i) => (
+              <div key={'l' + i} className="t-item done">
+                <div className="check"><Check size={13} /></div>
+                <div><div className="t-time">Logged · {m.slot}</div><div className="t-name">{m.emoji} {m.name}</div><div className="row wrap" style={{ gap: 6 }}><Chip tone="purple">Ate</Chip><Chip>{m.kcal} kcal</Chip></div></div>
+              </div>
+            ))}
           </div>
         </Card>
 
@@ -146,8 +153,8 @@ export default function Home() {
           <CardHead icon={<FileBarChart2 size={17} />} title="Planned calories this week" sub={`target ${t.kcal}`} />
           <div className="bars">
             {weekKcal.map((k, i) => (
-              <div key={i} className={`b ${i === today ? 'on' : ''} ${k > t.kcal * 1.05 ? 'over' : ''}`} onClick={() => setToday(i)} style={{ cursor: 'pointer' }}>
-                <em>{k}</em>
+              <div key={i} className={`b ${i === today ? 'on' : ''} ${cheat[i] ? 'cheat' : k > t.kcal * 1.05 ? 'over' : ''}`} onClick={() => setToday(i)} style={{ cursor: 'pointer' }}>
+                <em>{cheat[i] ? '🍕' : k}</em>
                 <i style={{ height: `${Math.min(100, (k / (t.kcal * 1.2)) * 100) * 0.78}%` }} />
                 {DAYS[i]}
               </div>

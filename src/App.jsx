@@ -36,6 +36,8 @@ export default function App() {
   const [scans, setScans] = useState([PRODUCTS[2], PRODUCTS[0], PRODUCTS[8]].map((p) => p.id))
   const [pendingScan, setPendingScan] = useState(null)
   const [today, setToday] = useState(0)
+  const [logged, setLogged] = useState({}) // logged[day] = [{id,name,emoji,slot,kcal,p,c,f}]
+  const [cheat, setCheat] = useState({}) // cheat[day] = true
 
   const t = useMemo(() => targets(profile), [profile])
 
@@ -50,7 +52,7 @@ export default function App() {
   const ctx = {
     restart: () => setOnboarded(false),
     page, go: setPage, profile, updateProfile, t, plan, setPlan, done, setDone, water, setWater,
-    glucose, setGlucose, pantry, setPantry, scans, setScans, pendingScan, setPendingScan, today, setToday,
+    glucose, setGlucose, pantry, setPantry, scans, setScans, pendingScan, setPendingScan, today, setToday, logged, setLogged, cheat, setCheat,
   }
 
   const Page = { home: Home, scan: Scan, ingredients: Ingredients, plans: Plans, health: Health, care: Care, profile: Profile }[page]

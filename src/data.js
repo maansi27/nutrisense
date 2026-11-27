@@ -1,27 +1,41 @@
 // ---------- Static prototype data (no backend) ----------
 
 export const GOALS = [
-  { id: 'loss', label: 'Weight loss', emoji: '🔥' },
-  { id: 'gain', label: 'Weight gain', emoji: '🍚' },
-  { id: 'maintain', label: 'Maintenance', emoji: '⚖️' },
-  { id: 'muscle', label: 'Muscle gain', emoji: '💪' },
-  { id: 'diabetes', label: 'Diabetes monitoring', emoji: '🩸' },
-  { id: 'general', label: 'General improvement', emoji: '🌱' },
+  { id: 'loss', label: 'Weight loss', emoji: '🔥', group: 'Body goals' },
+  { id: 'gain', label: 'Weight gain', emoji: '🍚', group: 'Body goals' },
+  { id: 'maintain', label: 'Maintenance', emoji: '⚖️', group: 'Body goals' },
+  { id: 'muscle', label: 'Muscle gain', emoji: '💪', group: 'Body goals' },
+  { id: 'energy', label: 'More energy', emoji: '⚡', group: 'Body goals' },
+  { id: 'general', label: 'General improvement', emoji: '🌱', group: 'Body goals' },
+  { id: 'diabetes', label: 'Diabetes monitoring', emoji: '🩸', group: 'Health goals' },
+  { id: 'heart', label: 'Heart health', emoji: '❤️', group: 'Health goals' },
+  { id: 'cholesterol', label: 'Lower cholesterol', emoji: '🫀', group: 'Health goals' },
+  { id: 'bp', label: 'Blood pressure', emoji: '🩺', group: 'Health goals' },
+  { id: 'pcos', label: 'PCOS-friendly eating', emoji: '🌸', group: 'Health goals' },
+  { id: 'thyroid', label: 'Thyroid support', emoji: '🦋', group: 'Health goals' },
+  { id: 'gut', label: 'Gut & digestion', emoji: '🥬', group: 'Health goals' },
 ]
 
 export const RESTRICTIONS = [
-  { id: 'vegetarian', label: 'Vegetarian', forbids: ['meat', 'fish', 'egg'] },
-  { id: 'vegan', label: 'Vegan', forbids: ['meat', 'fish', 'egg', 'dairy', 'honey'] },
-  { id: 'jain', label: 'Jain', forbids: ['meat', 'fish', 'egg', 'root'] },
+  { id: 'vegetarian', label: 'Vegetarian', forbids: ['meat', 'fish', 'shellfish', 'egg'] },
+  { id: 'eggetarian', label: 'Eggetarian', forbids: ['meat', 'fish', 'shellfish'] },
+  { id: 'pescatarian', label: 'Pescatarian', forbids: ['meat'] },
+  { id: 'vegan', label: 'Vegan', forbids: ['meat', 'fish', 'shellfish', 'egg', 'dairy', 'honey'] },
+  { id: 'jain', label: 'Jain', forbids: ['meat', 'fish', 'shellfish', 'egg', 'root', 'allium'] },
+  { id: 'satvik', label: 'No onion / garlic', forbids: ['allium'] },
   { id: 'nuts', label: 'Nut / peanut allergy', forbids: ['nuts', 'peanut'] },
   { id: 'gluten', label: 'Gluten-free', forbids: ['gluten'] },
   { id: 'dairy', label: 'Lactose intolerant', forbids: ['dairy'] },
   { id: 'soy', label: 'Soy allergy', forbids: ['soy'] },
+  { id: 'eggallergy', label: 'Egg allergy', forbids: ['egg'] },
+  { id: 'shellfish', label: 'Shellfish allergy', forbids: ['shellfish'] },
+  { id: 'sesame', label: 'Sesame allergy', forbids: ['sesame'] },
+  { id: 'nohoney', label: 'No honey / added sugar', forbids: ['honey'] },
 ]
 
 export const TAG_LABEL = {
   meat: 'meat', fish: 'fish', egg: 'egg', dairy: 'dairy', honey: 'honey',
-  root: 'root vegetables', nuts: 'tree nuts', peanut: 'peanuts', gluten: 'gluten', soy: 'soy',
+  root: 'root vegetables', allium: 'onion/garlic', shellfish: 'shellfish', sesame: 'sesame', nuts: 'tree nuts', peanut: 'peanuts', gluten: 'gluten', soy: 'soy',
 }
 
 export const ACTIVITY = [
@@ -44,7 +58,7 @@ export const PRODUCTS = [
     id: 'p2', barcode: '8901001000028', name: 'Instant Masala Noodles', brand: 'Slurpy', emoji: '🍜', group: 'Meals', serving: 70,
     per100: { kcal: 440, protein: 9, carbs: 62, sugar: 4, fat: 17, satfat: 8, fiber: 2, sodium: 1650 },
     ingredients: ['Refined wheat flour (maida)', 'Palm oil', 'Salt', 'Sugar', 'Flavour enhancers (627, 631)', 'Onion powder', 'Garlic powder', 'Spices'],
-    contains: ['gluten', 'root'],
+    contains: ['gluten', 'root', 'allium'],
   },
   {
     id: 'p3', barcode: '8901001000035', name: 'Roasted Chana Snack', brand: 'Desi Bites', emoji: '🫘', group: 'Snacks', serving: 30,
@@ -132,6 +146,11 @@ export const MEALS = [
   { id: 'm19', name: 'Almonds & Seasonal Fruit', emoji: '🍎', type: 'snack', kcal: 210, p: 6, c: 24, f: 11, fiber: 5, gi: 'low', time: 2, contains: ['nuts'], ing: ['almonds', 'apple'], goals: ['maintain', 'general', 'gain'] },
   { id: 'm20', name: 'Peanut Butter Banana Toast', emoji: '🍞', type: 'snack', kcal: 340, p: 12, c: 42, f: 15, fiber: 5, gi: 'med', time: 5, contains: ['peanut', 'nuts', 'gluten'], ing: ['bread', 'peanut butter', 'banana'], goals: ['gain', 'muscle'] },
   { id: 'm21', name: 'Masala Chaas & Roasted Chana', emoji: '🥛', type: 'snack', kcal: 170, p: 10, c: 22, f: 4, fiber: 6, gi: 'low', time: 5, contains: ['dairy'], ing: ['curd', 'roasted chana', 'cumin'], goals: ['loss', 'diabetes', 'maintain', 'muscle'] },
+  { id: 'm23', name: 'Garlic Prawn Stir-fry with Brown Rice', emoji: '🍤', type: 'dinner', kcal: 450, p: 32, c: 52, f: 12, fiber: 5, gi: 'low', time: 25, contains: ['shellfish'], ing: ['prawns', 'brown rice', 'garlic', 'capsicum', 'lemon'], goals: ['muscle', 'loss', 'heart'] },
+  { id: 'm24', name: 'Til-Jaggery Energy Ladoo', emoji: '🟤', type: 'snack', kcal: 190, p: 5, c: 24, f: 9, fiber: 3, gi: 'med', time: 10, contains: ['sesame'], ing: ['sesame seeds', 'jaggery', 'peanuts'], goals: ['energy', 'gain'] },
+  { id: 'm25', name: 'Flaxseed Oats Porridge with Berries', emoji: '🫐', type: 'breakfast', kcal: 290, p: 11, c: 44, f: 8, fiber: 10, gi: 'low', time: 10, contains: ['gluten'], ing: ['oats', 'flaxseed', 'berries', 'chia seeds'], goals: ['heart', 'cholesterol', 'gut'] },
+  { id: 'm26', name: 'Methi Thepla with Plain Curd', emoji: '🫓', type: 'dinner', kcal: 360, p: 13, c: 50, f: 11, fiber: 8, gi: 'low', time: 30, contains: ['gluten', 'dairy'], ing: ['methi', 'atta', 'curd', 'ajwain'], goals: ['pcos', 'diabetes', 'thyroid'] },
+  { id: 'm27', name: 'Curd Rice with Pomegranate', emoji: '🍚', type: 'lunch', kcal: 340, p: 11, c: 52, f: 9, fiber: 3, gi: 'med', time: 15, contains: ['dairy'], ing: ['rice', 'curd', 'pomegranate', 'curry leaves'], goals: ['gut', 'maintain', 'bp'] },
   { id: 'm22', name: 'Soya Chunk Tikki', emoji: '🥩', type: 'snack', kcal: 220, p: 18, c: 20, f: 7, fiber: 5, gi: 'low', time: 20, contains: ['soy', 'root'], ing: ['soya chunks', 'onion', 'oats', 'spices'], goals: ['muscle', 'loss'] },
 ]
 
